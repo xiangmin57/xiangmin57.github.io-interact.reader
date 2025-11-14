@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LireAventure - 法语学习平台</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #2ecc71;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .level-badge {
+            background-color: var(--accent);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .tab-container {
+            display: flex;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .tab {
+            padding: 1rem 2rem;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            border-bottom: 3px solid var(--secondary);
+            color: var(--secondary);
+        }
+        
+        .tab.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .content-section {
+            display: none;
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .story-title {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        
+        .story-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+            min-height: 200px;
+        }
+        
+        .french-text {
+            cursor: pointer;
+        }
+        
+        .word-highlight {
+            background-color: rgba(52, 152, 219, 0.2);
+            padding: 0 2px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .word-highlight:hover {
+            background-color: rgba(52, 152, 219, 0.4);
+        }
+        
+        .word-clickable {
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .word-clickable:hover {
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+        
+        .choices-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .choice-btn {
+            padding: 1rem;
+            background-color: var(--light);
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+            position: relative;
+        }
+        
+        .choice-btn:hover {
+            background-color: var(--secondary);
+            color: white;
+            border-color: var(--secondary);
+        }
+        
+        .choice-btn:hover .translation-btn {
+            background-color: white;
+            color: var(--secondary);
+        }
+        
+        .choice-btn .translation-btn {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            color: var(--secondary);
+            padding: 0.3rem 0.6rem;
+            border-radius: 3px;
+            transition: all 0.3s;
+        }
+        
+        .word-tooltip {
+            position: absolute;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 0.8rem;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+            max-width: 300px;
+            display: none;
+        }
+        
+        .word-tooltip .word {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+        
+        .word-tooltip .definition {
+            margin-bottom: 0.5rem;
+        }
+        
+        .word-tooltip .pos {
+            font-style: italic;
+            color: #999;
+            margin-bottom: 0.5rem;
+            font-size: 0.8rem;
+        }
+        
+        .pronunciation {
+            color: var(--secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .add-to-vocab {
+            margin-top: 0.5rem;
+            padding: 0.3rem 0.5rem;
+            background-color: var(--success);
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background-color: #eee;
+            border-radius: 4px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background-color: var(--success);
+            width: 0%;
+            transition: width 0.5s;
+        }
+        
+        .vocab-list {
+            margin-top: 2rem;
+        }
+        
+        .vocab-item {
+            padding: 0.8rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .vocab-word {
+            font-weight: bold;
+        }
+        
+        .theme-selector {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .theme-btn {
+            padding: 0.8rem 1.5rem;
+            background-color: var(--light);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .theme-btn.active {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .story-controls {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background-color: var(--light);
+            color: var(--dark);
+        }
+        
+        .language-help {
+            background-color: #fff9e6;
+            border-left: 4px solid #ffcc00;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+        
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .audio-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: var(--secondary);
+        }
+        
+        .translation-container {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            color: #333;
+        }
+        
+        .choice-translation {
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            background-color: #f0f8ff;
+            border-radius: 3px;
+            font-size: 0.9rem;
+            color: #333;
+        }
+        
+        .scene-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .theme-selection {
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .theme-option {
+            display: inline-block;
+            width: 30%;
+            margin: 1%;
+            padding: 2rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            vertical-align: top;
+            min-height: 200px;
+        }
+        
+        .theme-option.sci-fi {
+            background-color: #e1f5fe;
+            border: 2px solid #01579b;
+        }
+        
+        .theme-option.romance {
+            background-color: #fce4ec;
+            border: 2px solid #880e4f;
+        }
+        
+        .theme-option.thriller {
+            background-color: #fff3e0;
+            border: 2px solid #e65100;
+        }
+        
+        .theme-option:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .theme-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .theme-description {
+            margin-bottom: 1rem;
+        }
+        
+        .completion-btn {
+            margin-top: 2rem;
+            padding: 1rem 2rem;
+            background-color: var(--success);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        
+        .audio-playing {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .audio-wave {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+        
+        .audio-bar {
+            width: 3px;
+            height: 15px;
+            background-color: var(--secondary);
+            animation: audioWave 1s infinite ease-in-out;
+        }
+        
+        .audio-bar:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+        
+        .audio-bar:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+        
+        .audio-bar:nth-child(4) {
+            animation-delay: 0.3s;
+        }
+        
+        .audio-bar:nth-child(5) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes audioWave {
+            0%, 100% {
+                height: 5px;
+            }
+            50% {
+                height: 15px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .choices-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .theme-selector {
+                flex-direction: column;
+            }
+            
+            .theme-option {
+                width: 100%;
+                margin: 1rem 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">LireAventure</div>
+        <div class="user-info">
+            <span>用户: Pierre</span>
+            <div class="level-badge">水平 A1</div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="tab-container">
+            <div class="tab active" data-tab="theme">选择主题</div>
+            <div class="tab disabled" data-tab="story" id="story-tab">互动故事</div>
+            <div class="tab" data-tab="vocab-book">生词本</div>
+        </div>
+        
+        <div class="content-section active" id="theme-section">
+            <h2 class="story-title">选择您的故事主题</h2>
+            
+            <div class="language-help">
+                <strong>提示：</strong> 选择一个您感兴趣的主题，我们将根据您的选择生成个性化的故事。
+            </div>
+            
+            <div class="theme-selection">
+                <div class="theme-option sci-fi" data-theme="sci-fi">
+                    <div class="theme-title">🚀 科幻冒险</div>
+                    <div class="theme-description">探索未知的宇宙，面对外星文明和高科技谜团。</div>
+                    <p>适合喜欢科学、技术和未来世界的学习者</p>
+                </div>
+                
+                <div class="theme-option romance" data-theme="romance">
+                    <div class="theme-title">💖 浪漫爱情</div>
+                    <div class="theme-description">在巴黎的浪漫街头，邂逅命运中的那个人。</div>
+                    <p>适合喜欢情感故事和人际互动的学习者</p>
+                </div>
+                
+                <div class="theme-option thriller" data-theme="thriller">
+                    <div class="theme-title">🔪 惊悚悬疑</div>
+                    <div class="theme-description">解开古老城堡中的秘密，面对未知的危险。</div>
+                    <p>适合喜欢紧张刺激和推理的学习者</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="content-section" id="story-section">
+            <h2 class="story-title" id="story-title">太空船之谜</h2>
+            
+            <img src="https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80" alt="太空船内部" class="scene-image" id="story-image">
+            
+            <div class="audio-controls">
+                <button class="btn btn-primary" id="story-play-toggle-btn">
+                    <span class="audio-playing" id="audio-playing-indicator" style="display: none;">
+                        <span class="audio-wave">
+                            <span class="audio-bar"></span>
+                            <span class="audio-bar"></span>
+                            <span class="audio-bar"></span>
+                            <span class="audio-bar"></span>
+                            <span class="audio-bar"></span>
+                        </span>
+                        播放中
+                    </span>
+                    <span id="replay-text">🔊 播放音频</span>
+                </button>
+                <button class="btn btn-secondary" id="show-translation-btn">显示中文翻译</button>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress" id="story-progress" style="width: 0%"></div>
+            </div>
+            <div style="margin-bottom: 1rem;">故事进度: <span id="story-progress-text">0%</span></div>
+            
+            <div class="language-help">
+                <strong>提示：</strong> 点击任何法语单词可以查看中文释义和发音。蓝色高亮单词是重点词汇。
+            </div>
+            
+            <div class="story-content french-text" id="story-text">
+                Vous êtes un jeune scientifique à bord du vaisseau spatial "Étoile du Nord". Soudain, les lumières s'éteignent et une alarme retentit. Le capitaine annonce : "Nous avons un problème avec le système d'énergie principal. Nous devons agir vite !"
+                
+                Que faites-vous ?
+            </div>
+            
+            <div class="translation-container" id="story-translation" style="display: none;">
+                <strong>中文翻译：</strong><br>
+                您是一名年轻的科学家，在"北方之星"太空船上。突然，灯光熄灭，警报响起。船长宣布："我们的主能源系统出了问题。我们必须迅速行动！"
+                您会怎么做？
+            </div>
+            
+            <div class="choices-container" id="choices-container">
+                <div class="choice-btn" data-next="1">
+                    Je vais à la salle des machines pour inspecter le problème.
+                    <button class="translation-btn">翻译</button>
+                    <div class="choice-translation" style="display: none;">我去机器室检查问题。</div>
+                </div>
+                <div class="choice-btn" data-next="2">
+                    Je reste sur le pont et j'essaie de comprendre les données sur l'écran.
+                    <button class="translation-btn">翻译</button>
+                    <div class="choice-translation" style="display: none;">我留在甲板上，试着理解屏幕上的数据。</div>
+                </div>
+            </div>
+            
+            <div class="story-controls">
+                <button class="btn btn-secondary" id="prev-story-btn">上一页</button>
+                <button class="btn btn-secondary" id="restart-btn">重新开始故事</button>
+                <button class="btn btn-primary" id="save-btn">保存进度</button>
+                <button class="completion-btn" id="complete-story-btn" style="display: none;">完成故事</button>
+            </div>
+        </div>
+        
+        <div class="content-section" id="vocab-book-section">
+            <h2>我的生词本</h2>
+            
+            <div class="language-help">
+                <strong>提示：</strong> 您可以在阅读过程中点击单词，然后点击"添加到生词本"来保存单词。
+            </div>
+            
+            <div class="vocab-list" id="vocab-book-list">
+                <!-- 生词本内容将动态生成 -->
+                <div class="vocab-item">
+                    <div>生词本为空，请在阅读过程中添加单词。</div>
+                </div>
+            </div>
+            
+            <div class="story-controls">
+                <button class="btn btn-primary" id="practice-vocab">练习生词</button>
+                <button class="btn btn-secondary" id="export-vocab">导出生词本</button>
+                <button class="btn btn-secondary" id="clear-vocab">清空生词本</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="word-tooltip" id="word-tooltip">
+        <div class="word" id="tooltip-word"></div>
+        <div class="pos" id="tooltip-pos"></div>
+        <div class="definition" id="tooltip-definition"></div>
+        <div class="pronunciation" id="tooltip-pronunciation">
+            <span>🔊</span>
+            <span id="pronunciation-text"></span>
+        </div>
+        <button class="add-to-vocab" id="add-to-vocab-btn">添加到生词本</button>
+    </div>
+
+    <script>
+        // 重点词汇 - 只高亮显示这些词汇
+        const highlightedWords = [
+            "vaisseau", "lumières", "alarme", "capitaine", "problème", "énergie", 
+            "salle", "machines", "pont", "données", "écran", "planète", "équipage",
+            "hibernation", "alerte", "incompréhensibles", "inquiète", "examinait",
+            "fonctionner", "s'éteignirent", "clignotaient", "inquiétante", "sombre",
+            "bruit", "générateur", "analysez", "anomalie", "navigation", "cap",
+            "autorisation", "artiste", "mystérieuse", "château", "sous-sol", "bruits",
+            "étranges", "lampe", "torche", "police", "suspects", "porte", "verrouillée",
+            "clé", "journal", "histoire"
+        ];
+
+        // 完整词典 - 包含所有主题的所有单词
+        const frenchDictionary = {
+            // 科幻主题词汇
+            "vaisseau": { definition: "太空船", pronunciation: "vè-so", pos: "名词" },
+            "lumières": { definition: "灯光", pronunciation: "lu-mièr", pos: "名词" },
+            "alarme": { definition: "警报", pronunciation: "a-larm", pos: "名词" },
+            "capitaine": { definition: "船长", pronunciation: "ka-pi-tèn", pos: "名词" },
+            "problème": { definition: "问题", pronunciation: "pro-blèm", pos: "名词" },
+            "énergie": { definition: "能源", pronunciation: "é-nèr-ji", pos: "名词" },
+            "salle": { definition: "房间", pronunciation: "sal", pos: "名词" },
+            "machines": { definition: "机器", pronunciation: "ma-chin", pos: "名词" },
+            "pont": { definition: "甲板", pronunciation: "pon", pos: "名词" },
+            "données": { definition: "数据", pronunciation: "do-né", pos: "名词" },
+            "écran": { definition: "屏幕", pronunciation: "é-cran", pos: "名词" },
+            "planète": { definition: "行星", pronunciation: "pla-nèt", pos: "名词" },
+            "équipage": { definition: "船员", pronunciation: "é-ki-paj", pos: "名词" },
+            "hibernation": { definition: "冬眠", pronunciation: "i-bèr-na-sion", pos: "名词" },
+            "alerte": { definition: "警报", pronunciation: "a-lèrte", pos: "名词" },
+            "incompréhensibles": { definition: "难以理解的", pronunciation: "in-com-pré-an-sibl", pos: "形容词" },
+            "inquiète": { definition: "担心的", pronunciation: "in-kièt", pos: "形容词" },
+            "examinait": { definition: "检查", pronunciation: "èg-za-mi-nè", pos: "动词" },
+            "fonctionner": { definition: "运行", pronunciation: "fonk-sio-né", pos: "动词" },
+            "s'éteignirent": { definition: "熄灭", pronunciation: "sé-tè-gnire", pos: "动词" },
+            "clignotaient": { definition: "闪烁", pronunciation: "kli-gno-tè", pos: "动词" },
+            "inquiétante": { definition: "令人不安的", pronunciation: "in-kié-tante", pos: "形容词" },
+            "sombre": { definition: "黑暗的", pronunciation: "som-br", pos: "形容词" },
+            "bruit": { definition: "声音", pronunciation: "brui", pos: "名词" },
+            "générateur": { definition: "发电机", pronunciation: "jé-né-ra-teur", pos: "名词" },
+            "analysez": { definition: "分析", pronunciation: "a-na-li-zé", pos: "动词" },
+            "anomalie": { definition: "异常", pronunciation: "a-no-ma-li", pos: "名词" },
+            "navigation": { definition: "导航", pronunciation: "na-vi-ga-sion", pos: "名词" },
+            "cap": { definition: "航向", pronunciation: "kap", pos: "名词" },
+            "autorisation": { definition: "授权", pronunciation: "o-to-ri-za-sion", pos: "名词" },
+            
+            // 浪漫主题词汇
+            "artiste": { definition: "艺术家", pronunciation: "ar-tist", pos: "名词" },
+            "mystérieuse": { definition: "神秘的", pronunciation: "mis-té-rieuz", pos: "形容词" },
+            "peignant": { definition: "绘画", pronunciation: "pe-gnan", pos: "动词" },
+            "rencontrez": { definition: "遇见", pronunciation: "ran-con-tré", pos: "动词" },
+            "personne": { definition: "人", pronunciation: "pèr-son", pos: "名词" },
+            "change": { definition: "改变", pronunciation: "chanj", pos: "动词" },
+            "vie": { definition: "生活", pronunciation: "vi", pos: "名词" },
+            "tableau": { definition: "画作", pronunciation: "ta-blo", pos: "名词" },
+            "invite": { definition: "邀请", pronunciation: "in-vit", pos: "动词" },
+            "café": { definition: "咖啡", pronunciation: "ka-fé", pos: "名词" },
+            "parisien": { definition: "巴黎的", pronunciation: "pa-ri-zyan", pos: "形容词" },
+            "musicienne": { definition: "音乐家", pronunciation: "mu-zi-syèn", pos: "名词" },
+            "piano": { definition: "钢琴", pronunciation: "pya-no", pos: "名词" },
+            "passion": { definition: "热情", pronunciation: "pa-syon", pos: "名词" },
+            "art": { definition: "艺术", pronunciation: "ar", pos: "名词" },
+            "offre": { definition: "提供", pronunciation: "o-fr", pos: "动词" },
+            "apprendre": { definition: "学习", pronunciation: "a-prandr", pos: "动词" },
+            
+            // 惊悚主题词汇
+            "château": { definition: "城堡", pronunciation: "sha-to", pos: "名词" },
+            "sous-sol": { definition: "地下室", pronunciation: "su-sol", pos: "名词" },
+            "bruits": { definition: "声音", pronunciation: "brui", pos: "名词" },
+            "étranges": { definition: "奇怪的", pronunciation: "é-tranj", pos: "形容词" },
+            "lampe": { definition: "灯", pronunciation: "lamp", pos: "名词" },
+            "torche": { definition: "手电筒", pronunciation: "torch", pos: "名词" },
+            "police": { definition: "警察", pronunciation: "po-lis", pos: "名词" },
+            "suspects": { definition: "可疑的", pronunciation: "sus-pè", pos: "形容词" },
+            "porte": { definition: "门", pronunciation: "port", pos: "名词" },
+            "verrouillée": { definition: "锁着的", pronunciation: "vè-ru-yé", pos: "形容词" },
+            "clé": { definition: "钥匙", pronunciation: "klé", pos: "名词" },
+            "journal": { definition: "日记", pronunciation: "jour-nal", pos: "名词" },
+            "histoire": { definition: "历史", pronunciation: "is-twar", pos: "名词" },
+            
+            // 基础词汇
+            "vous": { definition: "您", pronunciation: "vu", pos: "代词" },
+            "êtes": { definition: "是", pronunciation: "èt", pos: "动词" },
+            "un": { definition: "一个", pronunciation: "un", pos: "冠词" },
+            "jeune": { definition: "年轻的", pronunciation: "jeune", pos: "形容词" },
+            "scientifique": { definition: "科学家", pronunciation: "syan-ti-fik", pos: "名词" },
+            "à": { definition: "在", pronunciation: "a", pos: "介词" },
+            "bord": { definition: "船上", pronunciation: "bor", pos: "名词" },
+            "du": { definition: "的", pronunciation: "dy", pos: "冠词" },
+            "spatial": { definition: "太空的", pronunciation: "spa-syal", pos: "形容词" },
+            "étoile": { definition: "星星", pronunciation: "e-twal", pos: "名词" },
+            "nord": { definition: "北方", pronunciation: "nor", pos: "名词" },
+            "soudain": { definition: "突然", pronunciation: "su-dan", pos: "副词" },
+            "les": { definition: "定冠词", pronunciation: "le", pos: "冠词" },
+            "s'éteignent": { definition: "熄灭", pronunciation: "se-tegn", pos: "动词" },
+            "et": { definition: "和", pronunciation: "e", pos: "连词" },
+            "une": { definition: "一个", pronunciation: "yn", pos: "冠词" },
+            "retentit": { definition: "响起", pronunciation: "re-tan-ti", pos: "动词" },
+            "annonce": { definition: "宣布", pronunciation: "a-nons", pos: "动词" },
+            "nous": { definition: "我们", pronunciation: "nu", pos: "代词" },
+            "avons": { definition: "有", pronunciation: "a-von", pos: "动词" },
+            "avec": { definition: "与", pronunciation: "a-vek", pos: "介词" },
+            "le": { definition: "定冠词", pronunciation: "le", pos: "冠词" },
+            "système": { definition: "系统", pronunciation: "sis-tem", pos: "名词" },
+            "d'": { definition: "的", pronunciation: "d", pos: "介词" },
+            "principal": { definition: "主要的", pronunciation: "pran-si-pal", pos: "形容词" },
+            "devons": { definition: "必须", pronunciation: "de-von", pos: "动词" },
+            "agir": { definition: "行动", pronunciation: "a-zir", pos: "动词" },
+            "vite": { definition: "快速", pronunciation: "vit", pos: "副词" },
+            "que": { definition: "什么", pronunciation: "ke", pos: "代词" },
+            "faites-vous": { definition: "您做什么", pronunciation: "fet-vu", pos: "动词短语" },
+            "je": { definition: "我", pronunciation: "re", pos: "代词" },
+            "vais": { definition: "去", pronunciation: "vè", pos: "动词" },
+            "la": { definition: "定冠词", pronunciation: "la", pos: "冠词" },
+            "des": { definition: "的", pronunciation: "dè", pos: "冠词" },
+            "pour": { definition: "为了", pronunciation: "pur", pos: "介词" },
+            "inspecter": { definition: "检查", pronunciation: "in-spèk-té", pos: "动词" },
+            "reste": { definition: "停留", pronunciation: "rèst", pos: "动词" },
+            "sur": { definition: "在...上", pronunciation: "sur", pos: "介词" },
+            "j'essaie": { definition: "我尝试", pronunciation: "jé-sè", pos: "动词" },
+            "de": { definition: "的", pronunciation: "de", pos: "介词" },
+            "comprendre": { definition: "理解", pronunciation: "com-prandr", pos: "动词" },
+            "l'": { definition: "定冠词", pronunciation: "l", pos: "冠词" }
+        };
+
+        // 生词本数据 - 初始为空
+        let vocabBook = JSON.parse(localStorage.getItem('vocabBook')) || [];
+
+        // 故事状态管理
+        let storyHistory = [];
+        let currentTheme = null;
+        let currentPage = 0;
+        let totalPages = 3; // 假设故事有3页
+        
+        // 音频状态管理
+        let isPlaying = false;
+        let currentUtterance = null;
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 确保生词本为空
+            if (vocabBook.length > 0 && vocabBook[0].word === "vous") {
+                vocabBook = [];
+                localStorage.setItem('vocabBook', JSON.stringify(vocabBook));
+            }
+            
+            updateVocabBookDisplay();
+        });
+        
+        // 选项卡管理
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                if (tab.classList.contains('disabled')) return;
+                
+                // 移除所有选项卡和内容区的active类
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+                
+                // 为当前点击的选项卡添加active类
+                tab.classList.add('active');
+                
+                // 显示对应的内容区
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(`${tabId}-section`).classList.add('active');
+                
+                // 如果是生词本页面，更新显示
+                if (tabId === 'vocab-book') {
+                    updateVocabBookDisplay();
+                }
+                
+                // 如果是故事页面，显示播放按钮但不自动播放
+                if (tabId === 'story' && currentTheme) {
+                    // 不自动播放，只显示播放按钮
+                    document.getElementById('audio-playing-indicator').style.display = 'none';
+                    document.getElementById('replay-text').style.display = 'inline';
+                    document.getElementById('replay-text').textContent = '🔊 播放音频';
+                }
+            });
+        });
+        
+        // 主题选择
+        document.querySelectorAll('.theme-option').forEach(option => {
+            option.addEventListener('click', () => {
+                currentTheme = option.getAttribute('data-theme');
+                
+                // 启用故事选项卡
+                document.getElementById('story-tab').classList.remove('disabled');
+                
+                // 隐藏主题选择页面，显示故事页面
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+                
+                document.getElementById('story-tab').classList.add('active');
+                document.getElementById('story-section').classList.add('active');
+                
+                // 重置故事历史
+                storyHistory = [];
+                currentPage = 0;
+                
+                // 根据主题更新故事内容
+                updateStoryByTheme(currentTheme);
+                
+                // 不自动播放，只显示播放按钮
+                document.getElementById('audio-playing-indicator').style.display = 'none';
+                document.getElementById('replay-text').style.display = 'inline';
+                document.getElementById('replay-text').textContent = '🔊 播放音频';
+            });
+        });
+        
+        // 根据主题更新故事内容
+        function updateStoryByTheme(theme) {
+            let storyTitle, storyContent, storyImage, choices;
+            
+            switch(theme) {
+                case 'sci-fi':
+                    storyTitle = "太空船之谜";
+                    storyContent = "Vous êtes un jeune scientifique à bord du vaisseau spatial 'Étoile du Nord'. Soudain, les lumières s'éteignent et une alarme retentit. Le capitaine annonce : 'Nous avons un problème avec le système d'énergie principal. Nous devons agir vite !' Que faites-vous ?";
+                    storyImage = "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80";
+                    choices = [
+                        "Je vais à la salle des machines pour inspecter le problème.",
+                        "Je reste sur le pont et j'essaie de comprendre les données sur l'écran."
+                    ];
+                    break;
+                case 'romance':
+                    storyTitle = "巴黎邂逅";
+                    storyContent = "Vous êtes un artiste français vivant à Paris. Un jour, en peignant près de la Seine, vous rencontrez une personne mystérieuse qui change votre vie. Que faites-vous ?";
+                    storyImage = "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80";
+                    choices = [
+                        "Je lui demande de poser pour mon tableau.",
+                        "Je l'invite à prendre un café dans un petit café parisien."
+                    ];
+                    break;
+                case 'thriller':
+                    storyTitle = "古堡秘密";
+                    storyContent = "Vous héritez d'un vieux château en Provence. La première nuit, vous entendez des bruits étranges provenant du sous-sol. Que faites-vous ?";
+                    storyImage = "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80";
+                    choices = [
+                        "J'explore le sous-sol avec une lampe torche.",
+                        "J'appelle la police pour signaler les bruits suspects."
+                    ];
+                    break;
+            }
+            
+            document.getElementById('story-title').textContent = storyTitle;
+            document.getElementById('story-text').textContent = storyContent;
+            document.getElementById('story-image').src = storyImage;
+            
+            // 更新翻译
+            document.getElementById('story-translation').innerHTML = `
+                <strong>中文翻译：</strong><br>
+                ${getStoryTranslation(storyContent, theme)}
+            `;
+            
+            // 更新选项
+            const choicesContainer = document.getElementById('choices-container');
+            choicesContainer.innerHTML = '';
+            
+            choices.forEach((choice, index) => {
+                const choiceBtn = document.createElement('div');
+                choiceBtn.className = 'choice-btn';
+                choiceBtn.setAttribute('data-next', index + 1);
+                choiceBtn.innerHTML = `
+                    ${choice}
+                    <button class="translation-btn">翻译</button>
+                    <div class="choice-translation" style="display: none;">${getChoiceTranslation(choice, theme)}</div>
+                `;
+                choicesContainer.appendChild(choiceBtn);
+            });
+            
+            // 重置进度
+            updateStoryProgress(0);
+            
+            // 重新附加事件
+            attachChoiceEvents();
+            setupWordClickEvents();
+            
+            // 保存当前状态到历史
+            storyHistory.push({
+                theme: theme,
+                step: 0,
+                title: storyTitle,
+                content: storyContent,
+                image: storyImage,
+                choices: choices
+            });
+        }
+        
+        // 获取故事翻译
+        function getStoryTranslation(content, theme) {
+            const translations = {
+                'sci-fi': {
+                    "Vous êtes un jeune scientifique à bord du vaisseau spatial 'Étoile du Nord'. Soudain, les lumières s'éteignent et une alarme retentit. Le capitaine annonce : 'Nous avons un problème avec le système d'énergie principal. Nous devons agir vite !' Que faites-vous ?": 
+                    "您是一名年轻的科学家，在'北方之星'太空船上。突然，灯光熄灭，警报响起。船长宣布：'我们的主能源系统出了问题。我们必须迅速行动！' 您会怎么做？"
+                },
+                'romance': {
+                    "Vous êtes un artiste français vivant à Paris. Un jour, en peignant près de la Seine, vous rencontrez une personne mystérieuse qui change votre vie. Que faites-vous ?": 
+                    "您是一名生活在巴黎的法国艺术家。一天，在塞纳河附近画画时，您遇到了一位改变您生活的神秘人物。您会怎么做？"
+                },
+                'thriller': {
+                    "Vous héritez d'un vieux château en Provence. La première nuit, vous entendez des bruits étranges provenant du sous-sol. Que faites-vous ?": 
+                    "您继承了普罗旺斯的一座古老城堡。第一晚，您听到从地下室传来奇怪的声音。您会怎么做？"
+                }
+            };
+            
+            return translations[theme] && translations[theme][content] ? translations[theme][content] : "翻译暂不可用";
+        }
+        
+        // 获取选项翻译
+        function getChoiceTranslation(choice, theme) {
+            const translations = {
+                'sci-fi': {
+                    "Je vais à la salle des machines pour inspecter le problème.": "我去机器室检查问题。",
+                    "Je reste sur le pont et j'essaie de comprendre les données sur l'écran.": "我留在甲板上，试着理解屏幕上的数据。",
+                    "J'inspecte le générateur de plus près.": "我仔细检查发电机。",
+                    "Je retourne sur le pont pour demander de l'aide.": "我回到甲板寻求帮助。",
+                    "J'essaie de corriger le cap manuellement.": "我尝试手动修正航向。",
+                    "Je vérifie si quelqu'un a accédé au système de navigation.": "我检查是否有人访问了导航系统。"
+                },
+                'romance': {
+                    "Je lui demande de poser pour mon tableau.": "我请她为我的画作当模特。",
+                    "Je l'invite à prendre un café dans un petit café parisien.": "我邀请她去一家巴黎小咖啡馆喝咖啡。",
+                    "Je lui demande de jouer du piano pour vous.": "我请她为您弹钢琴。",
+                    "Je lui parle de votre passion pour l'art.": "我向她讲述您对艺术的热爱。",
+                    "Je lui offre le tableau que vous êtes en train de peindre.": "我把我正在画的画送给她。",
+                    "Je lui demande si elle veut apprendre à peindre.": "我问她是否想学画画。"
+                },
+                'thriller': {
+                    "J'explore le sous-sol avec une lampe torche.": "我带着手电筒探索地下室。",
+                    "J'appelle la police pour signaler les bruits suspects.": "我打电话给警察报告可疑的声音。",
+                    "J'essaie de forcer la porte.": "我试图强行打开门。",
+                    "Je cherche la clé dans le château.": "我在城堡里寻找钥匙。",
+                    "Je lis le journal pour en savoir plus sur l'histoire du château.": "我阅读日记以了解城堡的历史。",
+                    "Je continue à explorer en attendant la police.": "我继续探索，等待警察到来。"
+                }
+            };
+            
+            return translations[theme] && translations[theme][choice] ? translations[theme][choice] : "翻译暂不可用";
+        }
+        
+        // 单词点击功能 - 修复版：只高亮重点词汇
+        function setupWordClickEvents() {
+            // 为所有法语文本添加点击事件
+            document.querySelectorAll('.french-text').forEach(element => {
+                // 先清除之前的内容
+                element.innerHTML = element.textContent;
+                
+                // 将文本分割成单词
+                const text = element.textContent;
+                const words = text.split(/(\s+)/);
+                
+                // 重新构建HTML，为每个单词添加span包装
+                element.innerHTML = words.map(word => {
+                    if (word.trim() === '') return word;
+                    
+                    // 清理单词（移除标点）
+                    const cleanWord = word.toLowerCase().replace(/[.,!?;:"]/g, '');
+                    
+                    // 检查是否在重点词汇列表中
+                    if (highlightedWords.includes(cleanWord)) {
+                        return `<span class="word-highlight" data-word="${cleanWord}">${word}</span>`;
+                    } else {
+                        return `<span class="word-clickable" data-word="${cleanWord}">${word}</span>`;
+                    }
+                }).join('');
+                
+                // 为所有单词添加点击事件
+                element.querySelectorAll('span[data-word]').forEach(span => {
+                    span.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const word = span.getAttribute('data-word');
+                        
+                        if (frenchDictionary[word]) {
+                            const wordData = frenchDictionary[word];
+                            showWordTooltip(
+                                word, 
+                                wordData.definition, 
+                                wordData.pronunciation, 
+                                wordData.pos, 
+                                e.pageX, 
+                                e.pageY
+                            );
+                        } else {
+                            // 如果单词不在词典中，显示提示
+                            showWordTooltip(
+                                word, 
+                                "未找到释义", 
+                                "", 
+                                "", 
+                                e.pageX, 
+                                e.pageY
+                            );
+                        }
+                    });
+                });
+            });
+        }
+        
+        function showWordTooltip(word, definition, pronunciation, pos, x, y) {
+            const tooltip = document.getElementById('word-tooltip');
+            
+            document.getElementById('tooltip-word').textContent = word;
+            document.getElementById('tooltip-pos').textContent = pos;
+            document.getElementById('tooltip-definition').textContent = definition;
+            document.getElementById('pronunciation-text').textContent = pronunciation;
+            
+            // 定位工具提示 - 确保显示在单词附近
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            
+            let left = x;
+            let top = y + 20;
+            
+            // 确保工具提示不会超出视口
+            if (left + 300 > viewportWidth) {
+                left = viewportWidth - 320;
+            }
+            
+            if (top + 150 > viewportHeight) {
+                top = y - 160;
+            }
+            
+            tooltip.style.left = `${left}px`;
+            tooltip.style.top = `${top}px`;
+            tooltip.style.display = 'block';
+            
+            // 设置添加到生词本按钮的数据
+            document.getElementById('add-to-vocab-btn').setAttribute('data-word', word);
+            document.getElementById('add-to-vocab-btn').setAttribute('data-definition', definition);
+            document.getElementById('add-to-vocab-btn').setAttribute('data-pronunciation', pronunciation);
+            document.getElementById('add-to-vocab-btn').setAttribute('data-pos', pos);
+            
+            // 播放单词发音
+            speakWord(word);
+        }
+        
+        // 发音功能
+        function speakWord(word) {
+            // 检查浏览器是否支持语音合成
+            if (!('speechSynthesis' in window)) {
+                alert("您的浏览器不支持语音合成功能，请尝试使用Chrome或Edge浏览器。");
+                return;
+            }
+            
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.lang = 'fr-FR';
+            utterance.rate = 0.8;
+            
+            window.speechSynthesis.speak(utterance);
+        }
+        
+        // 全文朗读功能
+        function playStoryAudio(text, lang = 'fr-FR') {
+            // 检查浏览器是否支持语音合成
+            if (!('speechSynthesis' in window)) {
+                alert("您的浏览器不支持语音合成功能，请尝试使用Chrome或Edge浏览器。");
+                return;
+            }
+            
+            // 停止当前播放
+            if (isPlaying && currentUtterance) {
+                window.speechSynthesis.cancel();
+            }
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = lang;
+            utterance.rate = 0.8;
+            
+            // 显示播放状态
+            document.getElementById('audio-playing-indicator').style.display = 'flex';
+            document.getElementById('replay-text').style.display = 'none';
+            isPlaying = true;
+            currentUtterance = utterance;
+            
+            utterance.onend = function() {
+                // 播放结束，显示重新播放按钮
+                document.getElementById('audio-playing-indicator').style.display = 'none';
+                document.getElementById('replay-text').style.display = 'inline';
+                document.getElementById('replay-text').textContent = '🔊 重新播放';
+                isPlaying = false;
+                currentUtterance = null;
+            };
+            
+            utterance.onerror = function() {
+                // 播放出错，显示播放按钮
+                document.getElementById('audio-playing-indicator').style.display = 'none';
+                document.getElementById('replay-text').style.display = 'inline';
+                document.getElementById('replay-text').textContent = '🔊 播放音频';
+                isPlaying = false;
+                currentUtterance = null;
+            };
+            
+            window.speechSynthesis.speak(utterance);
+        }
+        
+        // 故事播放按钮
+        document.getElementById('story-play-toggle-btn').addEventListener('click', () => {
+            const storyText = document.getElementById('story-text').textContent;
+            playStoryAudio(storyText);
+        });
+        
+        // 选项翻译按钮 - 修复版：阻止事件冒泡
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('translation-btn')) {
+                e.stopPropagation(); // 阻止事件冒泡
+                e.preventDefault(); // 阻止默认行为
+                const translation = e.target.parentElement.querySelector('.choice-translation');
+                if (translation) {
+                    translation.style.display = translation.style.display === 'none' ? 'block' : 'none';
+                }
+                return false; // 进一步阻止事件
+            }
+        });
+        
+        // 点击页面其他位置时隐藏单词工具提示
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.word-tooltip') && !e.target.classList.contains('word-highlight') && !e.target.classList.contains('word-clickable')) {
+                document.getElementById('word-tooltip').style.display = 'none';
+            }
+        });
+        
+        // 显示翻译功能 - 修复版：一次点击显示
+        document.getElementById('show-translation-btn').addEventListener('click', () => {
+            const translation = document.getElementById('story-translation');
+            translation.style.display = translation.style.display === 'none' ? 'block' : 'none';
+        });
+        
+        // 添加到生词本功能
+        document.getElementById('add-to-vocab-btn').addEventListener('click', (e) => {
+            const word = e.target.getAttribute('data-word');
+            const definition = e.target.getAttribute('data-definition');
+            const pronunciation = e.target.getAttribute('data-pronunciation');
+            const pos = e.target.getAttribute('data-pos');
+            
+            // 检查是否已经存在
+            const exists = vocabBook.some(item => item.word === word);
+            if (!exists) {
+                vocabBook.push({ word, definition, pronunciation, pos });
+                localStorage.setItem('vocabBook', JSON.stringify(vocabBook));
+                alert(`"${word}" 已添加到生词本！`);
+            } else {
+                alert(`"${word}" 已经在生词本中！`);
+            }
+            
+            // 隐藏工具提示
+            document.getElementById('word-tooltip').style.display = 'none';
+        });
+        
+        // 更新生词本显示
+        function updateVocabBookDisplay() {
+            const vocabBookList = document.getElementById('vocab-book-list');
+            vocabBookList.innerHTML = '';
+            
+            if (vocabBook.length === 0) {
+                vocabBookList.innerHTML = '<div class="vocab-item"><div>生词本为空，请在阅读过程中添加单词。</div></div>';
+                return;
+            }
+            
+            vocabBook.forEach((item, index) => {
+                const vocabItem = document.createElement('div');
+                vocabItem.className = 'vocab-item';
+                vocabItem.innerHTML = `
+                    <div>
+                        <div class="vocab-word">${item.word} <span style="font-style: italic; color: #666; font-size: 0.9rem;">(${item.pos})</span></div>
+                        <div class="vocab-definition">${item.definition}</div>
+                    </div>
+                    <div>
+                        <button class="audio-btn play-vocab-audio" data-word="${item.word}">🔊</button>
+                        <button class="btn btn-secondary remove-vocab" data-index="${index}">移除</button>
+                    </div>
+                `;
+                vocabBookList.appendChild(vocabItem);
+            });
+            
+            // 添加移除事件
+            document.querySelectorAll('.remove-vocab').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    vocabBook.splice(index, 1);
+                    localStorage.setItem('vocabBook', JSON.stringify(vocabBook));
+                    updateVocabBookDisplay();
+                });
+            });
+            
+            // 添加生词本音频播放事件
+            document.querySelectorAll('.play-vocab-audio').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const word = this.getAttribute('data-word');
+                    speakWord(word);
+                });
+            });
+        }
+        
+        // 清空生词本
+        document.getElementById('clear-vocab').addEventListener('click', () => {
+            if (confirm('确定要清空生词本吗？')) {
+                vocabBook = [];
+                localStorage.setItem('vocabBook', JSON.stringify(vocabBook));
+                updateVocabBookDisplay();
+            }
+        });
+        
+        // 故事选择功能
+        function attachChoiceEvents() {
+            document.querySelectorAll('.choice-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    // 如果点击的是翻译按钮，不处理选择
+                    if (e.target.classList.contains('translation-btn') || e.target.classList.contains('choice-translation')) {
+                        return;
+                    }
+                    
+                    const nextStep = btn.getAttribute('data-next');
+                    
+                    // 保存当前状态到历史
+                    storyHistory.push({
+                        theme: currentTheme,
+                        step: parseInt(nextStep),
+                        title: document.getElementById('story-title').textContent,
+                        content: document.getElementById('story-text').textContent,
+                        image: document.getElementById('story-image').src,
+                        choices: Array.from(document.querySelectorAll('.choice-btn')).map(b => b.innerHTML)
+                    });
+                    
+                    // 根据选择更新故事
+                    handleStoryChoice(nextStep);
+                });
+            });
+        }
+        
+        // 处理故事选择
+        function handleStoryChoice(step) {
+            let storyContent, storyTranslation, choices, storyImage;
+            
+            currentPage = parseInt(step);
+            
+            switch(step) {
+                case '1':
+                    if (currentTheme === 'sci-fi') {
+                        storyContent = "Vous arrivez dans la salle des machines. C'est sombre et vous entendez un bruit étrange provenant du générateur principal. Que faites-vous ?";
+                        storyTranslation = "您到达了机器室。里面很暗，您听到从主发电机传来奇怪的声音。您会怎么做？";
+                        choices = [
+                            "J'inspecte le générateur de plus près.",
+                            "Je retourne sur le pont pour demander de l'aide."
+                        ];
+                        storyImage = "https://images.unsplash.com/photo-1535378620166-273708d44e4c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80";
+                    } else if (currentTheme === 'romance') {
+                        storyContent = "La personne accepte votre invitation. Au café, vous apprenez qu'elle s'appelle Sophie et qu'elle est musicienne. Que faites-vous ?";
+                        storyTranslation = "对方接受了您的邀请。在咖啡馆，您得知她叫索菲，是一位音乐家。您会怎么做？";
+                        choices = [
+                            "Je lui demande de jouer du piano pour vous.",
+                            "Je lui parle de votre passion pour l'art."
+                        ];
+                        storyImage = "https://images.unsplash.com/photo-1445019980597-93fa8acb246c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80";
+                    } else if (currentTheme === 'thriller') {
+                        storyContent = "Dans le sous-sol, vous trouvez une vieille porte verrouillée. Des bruits étranges semblent venir de derrière. Que faites-vous ?";
+                        storyTranslation = "在地下室，您发现了一扇锁着的旧门。奇怪的声音似乎来自门后。您会怎么做？";
+                        choices = [
+                            "J'essaie de forcer la porte.",
+                            "Je cherche la clé dans le château."
+                        ];
+                        storyImage = "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80";
+                    }
+                    break;
+                case '2':
+                    if (currentTheme === 'sci-fi') {
+                        storyContent = "Vous restez sur le pont et analysez les données. Vous remarquez une anomalie dans le système de navigation. Il semble que le vaisseau ait changé de cap sans autorisation. Que faites-vous ?";
+                        storyTranslation = "您留在甲板上分析数据。您注意到导航系统中有一个异常。似乎飞船在未经授权的情况下改变了航向。您会怎么做？";
+                        choices = [
+                            "J'essaie de corriger le cap manuellement.",
+                            "Je vérifie si quelqu'un a accédé au système de navigation."
+                        ];
+                        storyImage = "https://images.unsplash.com/photo-1502136969935-8d8eef54d77b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80";
+                    } else if (currentTheme === 'romance') {
+                        storyContent = "Vous décidez de rester à peindre. Sophie revient le lendemain et vous regarde travailler. Que faites-vous ?";
+                        storyTranslation = "您决定继续画画。索菲第二天又来了，看着您工作。您会怎么做？";
+                        choices = [
+                            "Je lui offre le tableau que vous êtes en train de peindre.",
+                            "Je lui demande si elle veut apprendre à peindre."
+                        ];
+                        storyImage = "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80";
+                    } else if (currentTheme === 'thriller') {
+                        storyContent = "Vous décidez d'appeler la police. En attendant, vous explorez le rez-de-chaussée et trouvez un vieux journal. Que faites-vous ?";
+                        storyTranslation = "您决定打电话给警察。等待期间，您探索了一楼，发现了一本旧日记。您会怎么做？";
+                        choices = [
+                            "Je lis le journal pour en savoir plus sur l'histoire du château.",
+                            "Je continue à explorer en attendant la police."
+                        ];
+                        storyImage = "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80";
+                    }
+                    break;
+                case '3':
+                case '4':
+                    // 第三页故事内容
+                    if (currentTheme === 'sci-fi') {
+                        storyContent = "Vous avez résolu le problème! Le vaisseau est maintenant en sécurité. Félicitations!";
+                        storyTranslation = "您解决了问题！飞船现在安全了。恭喜！";
+                        choices = [];
+                        storyImage = "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80";
+                    } else if (currentTheme === 'romance') {
+                        storyContent = "Votre relation avec Sophie se développe. Vous passez de merveilleux moments ensemble à Paris.";
+                        storyTranslation = "您与索菲的关系不断发展。你们在巴黎一起度过了美好的时光。";
+                        choices = [];
+                        storyImage = "https://images.unsplash.com/photo-1431274172761-fca41d930114?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80";
+                    } else if (currentTheme === 'thriller') {
+                        storyContent = "Vous avez découvert le secret du château! Maintenant, vous devez décider quoi faire de cette découverte.";
+                        storyTranslation = "您发现了城堡的秘密！现在，您必须决定如何处理这个发现。";
+                        choices = [];
+                        storyImage = "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80";
+                    }
+                    break;
+            }
+            
+            document.getElementById('story-text').textContent = storyContent;
+            document.getElementById('story-translation').innerHTML = `<strong>中文翻译：</strong><br>${storyTranslation}`;
+            document.getElementById('story-translation').style.display = 'none'; // 重置翻译显示状态
+            document.getElementById('story-image').src = storyImage;
+            
+            // 更新选项
+            const choicesContainer = document.getElementById('choices-container');
+            choicesContainer.innerHTML = '';
+            
+            if (choices.length > 0) {
+                choices.forEach((choice, index) => {
+                    const choiceBtn = document.createElement('div');
+                    choiceBtn.className = 'choice-btn';
+                    choiceBtn.setAttribute('data-next', index + 3); // 3和4对应第三页
+                    choiceBtn.innerHTML = `
+                        ${choice}
+                        <button class="translation-btn">翻译</button>
+                        <div class="choice-translation" style="display: none;">${getChoiceTranslation(choice, currentTheme)}</div>
+                    `;
+                    choicesContainer.appendChild(choiceBtn);
+                });
+                
+                // 隐藏完成按钮
+                document.getElementById('complete-story-btn').style.display = 'none';
+            } else {
+                choicesContainer.innerHTML = '<p>故事结束！感谢您的参与。</p>';
+                // 显示完成按钮
+                document.getElementById('complete-story-btn').style.display = 'block';
+            }
+            
+            // 更新进度 - 修复版：正确的进度计算
+            // 第一页: 0%, 第二页: 33%, 第三页: 66% (点击完成按钮后100%)
+            if (currentPage === 1) {
+                updateStoryProgress(33); // 第二页显示33%
+            } else if (currentPage >= 2) {
+                updateStoryProgress(66); // 第三页显示66%
+            }
+            
+            // 重新附加事件到新按钮
+            attachChoiceEvents();
+            setupWordClickEvents();
+            
+            // 不自动播放，只显示播放按钮
+            document.getElementById('audio-playing-indicator').style.display = 'none';
+            document.getElementById('replay-text').style.display = 'inline';
+            document.getElementById('replay-text').textContent = '🔊 播放音频';
+        }
+        
+        // 更新故事进度
+        function updateStoryProgress(percent) {
+            document.getElementById('story-progress').style.width = `${percent}%`;
+            document.getElementById('story-progress-text').textContent = `${percent}%`;
+        }
+        
+        // 完成故事按钮
+        document.getElementById('complete-story-btn').addEventListener('click', () => {
+            updateStoryProgress(100);
+            alert("恭喜您完成故事！");
+        });
+        
+        // 故事页面上一页按钮
+        document.getElementById('prev-story-btn').addEventListener('click', () => {
+            if (storyHistory.length > 1) {
+                // 移除当前状态
+                storyHistory.pop();
+                // 获取上一个状态
+                const prevState = storyHistory[storyHistory.length - 1];
+                
+                // 恢复状态
+                document.getElementById('story-title').textContent = prevState.title;
+                document.getElementById('story-text').textContent = prevState.content;
+                document.getElementById('story-image').src = prevState.image;
+                
+                // 更新选项
+                const choicesContainer = document.getElementById('choices-container');
+                choicesContainer.innerHTML = '';
+                
+                prevState.choices.forEach((choice, index) => {
+                    const choiceBtn = document.createElement('div');
+                    choiceBtn.className = 'choice-btn';
+                    choiceBtn.setAttribute('data-next', index + 1);
+                    choiceBtn.innerHTML = choice + '<button class="translation-btn">翻译</button><div class="choice-translation" style="display: none;">' + getChoiceTranslation(choice, currentTheme) + '</div>';
+                    choicesContainer.appendChild(choiceBtn);
+                });
+                
+                // 更新进度
+                currentPage = prevState.step;
+                if (currentPage === 0) {
+                    updateStoryProgress(0);
+                } else if (currentPage === 1) {
+                    updateStoryProgress(33);
+                }
+                
+                // 隐藏完成按钮
+                document.getElementById('complete-story-btn').style.display = 'none';
+                
+                // 重新附加事件
+                attachChoiceEvents();
+                setupWordClickEvents();
+                
+                // 不自动播放，只显示播放按钮
+                document.getElementById('audio-playing-indicator').style.display = 'none';
+                document.getElementById('replay-text').style.display = 'inline';
+                document.getElementById('replay-text').textContent = '🔊 播放音频';
+            } else {
+                alert("已经是第一页了！");
+            }
+        });
+        
+        // 重新开始按钮
+        document.getElementById('restart-btn').addEventListener('click', () => {
+            // 切换到主题选择页面
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+            document.querySelector('.tab[data-tab="theme"]').classList.add('active');
+            document.getElementById('theme-section').classList.add('active');
+            
+            // 重置故事历史
+            storyHistory = [];
+            currentPage = 0;
+        });
+        
+        // 保存按钮
+        document.getElementById('save-btn').addEventListener('click', () => {
+            alert("您的进度已保存！");
+        });
+        
+        // 初始化
+        setupWordClickEvents();
+        updateStoryProgress(0);
+        updateVocabBookDisplay();
+        attachChoiceEvents();
+    </script>
+</body>
+</html>
